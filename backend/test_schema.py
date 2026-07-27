@@ -2,7 +2,7 @@ from app.auth.schemas import UserRegistration
 
 user = UserRegistration(
     full_name="Raghu Ram",
-    email="raghu@example.com",
+    email="raghu@gmail.com",
     password="Raghu@1234",
 )
 
