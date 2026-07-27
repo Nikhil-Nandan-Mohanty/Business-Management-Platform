@@ -24,6 +24,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
     """
     return password_hash.verify(password, hashed_password)
 
+
 def create_access_token(
     subject: str,
     role: str,
@@ -50,6 +51,7 @@ def create_access_token(
         settings.SECRET_KEY,
         algorithm=settings.ALGORITHM,
     )
+
 
 def decode_access_token(token: str) -> dict:
     """
