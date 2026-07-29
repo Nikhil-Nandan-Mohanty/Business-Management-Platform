@@ -39,5 +39,3 @@ class TimestampMixin:
         server_default=func.now(),
     )
 
-# Import all models here so Alembic can discover them
-from app.modules.users.models import User 
