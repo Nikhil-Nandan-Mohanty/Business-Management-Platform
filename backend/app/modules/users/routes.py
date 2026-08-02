@@ -7,12 +7,17 @@ from fastapi import (
     status,
 )
 
-from app.common.exceptions import EmailAlreadyExistsError
+from app.common.exceptions import (
+    EmailAlreadyExistsError,
+    InvalidCredentialsError,
+)
 from app.db.session import get_db
 from app.modules.users.repository import UserRepository
 from app.modules.users.schemas import (
     UserRegistration,
     UserResponse,
+    TokenResponse,
+    UserLogin,
 )
 from app.modules.users.service import UserService
 
@@ -48,3 +53,32 @@ def register(
         ) from exc
 
     return created_user
+
+
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+)
+def login(
+    credentials: UserLogin,
+    db: Session = Depends(get_db),
+):
+    """
+    Authenticate a user.
+    """
+
+    repository = UserRepository(db)
+    service = UserService(repository)
+
+    try:
+        return service.login_user(
+            credentials.email,
+            credentials.password,
+        )
+
+    except InvalidCredentialsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(exc),
+        ) from exc

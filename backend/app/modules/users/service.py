@@ -6,6 +6,14 @@ from app.modules.users.models import User
 from app.modules.users.repository import UserRepository
 from app.modules.users.schemas import UserRegistration
 
+from app.auth.security import (
+    create_access_token,
+    verify_password,
+)
+
+from app.common.exceptions import InvalidCredentialsError
+from app.modules.users.schemas import TokenResponse
+
 
 class UserService:
     """
@@ -35,3 +43,32 @@ class UserService:
         )
 
         return self.repository.create(user)
+
+    def login_user(self, email: str, password: str) -> TokenResponse:
+        """
+         Authenticate a user and return a JWT access token.
+        """
+
+        user = self.repository.get_by_email(email)
+
+        if user is None:
+            raise InvalidCredentialsError(
+                "Invalid email or password."
+            )
+
+        if not verify_password(
+            password,
+            user.password_hash,
+        ):
+            raise InvalidCredentialsError(
+                "Invalid email or password."
+            )
+
+        access_token = create_access_token(
+            subject=str(user.id),
+            role=user.role.value,
+        )
+
+        return TokenResponse(
+            access_token=access_token,
+        )
