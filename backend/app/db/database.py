@@ -7,7 +7,7 @@ from app.core.config import settings
 engine = create_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,  # Show SQL queries in development
-    pool_pre_ping=True,   # Check connection before using it
+    pool_pre_ping=True,  # Check connection before using it
 )
 
 # Session Factory

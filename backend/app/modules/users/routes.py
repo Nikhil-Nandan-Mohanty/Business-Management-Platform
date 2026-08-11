@@ -20,6 +20,8 @@ from app.modules.users.schemas import (
     UserLogin,
 )
 from app.modules.users.service import UserService
+from app.auth.dependencies import get_current_user
+from app.modules.users.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -82,3 +84,17 @@ def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc),
         ) from exc
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_me(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Return the currently authenticated user.
+    """
+    return current_user

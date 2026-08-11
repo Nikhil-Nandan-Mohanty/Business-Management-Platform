@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import jwt
 from jwt.exceptions import InvalidTokenError

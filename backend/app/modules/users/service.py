@@ -1,5 +1,4 @@
 from app.auth.security import hash_password
-from fastapi import HTTPException, status
 
 from app.common.exceptions import EmailAlreadyExistsError
 from app.modules.users.models import User
@@ -30,9 +29,7 @@ class UserService:
         existing_user = self.repository.get_by_email(user_data.email)
 
         if existing_user:
-             raise EmailAlreadyExistsError(
-                "Email already registered."
-            )
+            raise EmailAlreadyExistsError("Email already registered.")
 
         hashed_password = hash_password(user_data.password)
 
@@ -46,23 +43,19 @@ class UserService:
 
     def login_user(self, email: str, password: str) -> TokenResponse:
         """
-         Authenticate a user and return a JWT access token.
+        Authenticate a user and return a JWT access token.
         """
 
         user = self.repository.get_by_email(email)
 
         if user is None:
-            raise InvalidCredentialsError(
-                "Invalid email or password."
-            )
+            raise InvalidCredentialsError("Invalid email or password.")
 
         if not verify_password(
             password,
             user.password_hash,
         ):
-            raise InvalidCredentialsError(
-                "Invalid email or password."
-            )
+            raise InvalidCredentialsError("Invalid email or password.")
 
         access_token = create_access_token(
             subject=str(user.id),
