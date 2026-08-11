@@ -2,9 +2,8 @@ from sqlalchemy import text
 
 from app.db.database import engine
 
-try:
+
+def test_database_connection():
     with engine.connect() as connection:
-        connection.execute(text("SELECT 1"))
-        print("✅ Database connected successfully!")
-except Exception as e:
-    print(f"❌ Connection failed: {e}")
+        result = connection.execute(text("SELECT 1"))
+        assert result.scalar() == 1

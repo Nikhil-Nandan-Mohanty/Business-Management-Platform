@@ -38,6 +38,3 @@ class TimestampMixin:
         onupdate=lambda: datetime.now(timezone.utc),
         server_default=func.now(),
     )
-
-# Import all models here so Alembic can discover them
-from app.modules.users.models import User 
