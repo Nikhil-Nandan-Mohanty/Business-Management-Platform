@@ -1,17 +1,21 @@
-from app.auth.security import hash_password
+from uuid import UUID
 
 from app.common.exceptions import EmailAlreadyExistsError
 from app.modules.users.models import User
 from app.modules.users.repository import UserRepository
-from app.modules.users.schemas import UserRegistration
+from app.modules.companies.repository import CompanyRepository
 
 from app.auth.security import (
     create_access_token,
+    hash_password,
     verify_password,
 )
 
 from app.common.exceptions import InvalidCredentialsError
-from app.modules.users.schemas import TokenResponse
+from app.modules.users.schemas import (
+    TokenResponse,
+    UserRegistration,
+)
 
 
 class UserService:
@@ -19,8 +23,11 @@ class UserService:
     Handles user-related business logic.
     """
 
-    def __init__(self, repository: UserRepository):
+    def __init__(
+        self, repository: UserRepository, company_repository: CompanyRepository
+    ):
         self.repository = repository
+        self.company_repository = company_repository
 
     def register_user(self, user_data: UserRegistration) -> User:
         """
@@ -65,3 +72,32 @@ class UserService:
         return TokenResponse(
             access_token=access_token,
         )
+
+    def assign_user_to_company(
+        self,
+        user_id: UUID,
+        company_id: UUID,
+    ) -> User:
+        """
+        Assign a user to a company.
+        """
+        user = self.repository.get_by_id(user_id)
+
+        if user is None:
+            raise ValueError("User not found")
+
+        company = self.company_repository.get_by_id(company_id)
+
+        if company is None:
+            raise ValueError("Company not found")
+
+        return self.repository.assign_company(
+            user,
+            company_id,
+        )
+
+    def get_users_by_company(self, company_id: UUID) -> list[User]:
+        """
+        Retrieve all users belonging to a company.
+        """
+        return self.repository.get_by_company_id(company_id)

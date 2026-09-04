@@ -54,5 +54,6 @@ class UserResponse(BaseModel):
     full_name: str
     email: EmailStr
     role: UserRole
+    company_id: UUID | None
     is_active: bool
     is_verified: bool

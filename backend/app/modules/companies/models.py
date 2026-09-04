@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.modules.users.models import User
 
 
 class Company(Base, TimestampMixin):
@@ -69,6 +73,11 @@ class Company(Base, TimestampMixin):
         Boolean,
         default=True,
         nullable=False,
+    )
+
+    users: Mapped[list["User"]] = relationship(
+        "User",
+        back_populates="company",
     )
 
     def __repr__(self) -> str:

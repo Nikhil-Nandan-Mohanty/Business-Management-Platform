@@ -1,3 +1,4 @@
+from uuid import UUID
 from sqlalchemy.orm import Session
 
 from fastapi import (
@@ -22,6 +23,8 @@ from app.modules.users.schemas import (
 from app.modules.users.service import UserService
 from app.auth.dependencies import get_current_user
 from app.modules.users.models import User
+from app.modules.companies.repository import CompanyRepository
+
 
 router = APIRouter(
     prefix="/auth",
@@ -43,7 +46,12 @@ def register(
     """
 
     repository = UserRepository(db)
-    service = UserService(repository)
+    company_repository = CompanyRepository(db)
+
+    service = UserService(
+        repository,
+        company_repository,
+    )
 
     try:
         created_user = service.register_user(user)
@@ -71,7 +79,12 @@ def login(
     """
 
     repository = UserRepository(db)
-    service = UserService(repository)
+    company_repository = CompanyRepository(db)
+
+    service = UserService(
+        repository,
+        company_repository,
+    )
 
     try:
         return service.login_user(
@@ -98,3 +111,62 @@ def get_me(
     Return the currently authenticated user.
     """
     return current_user
+
+
+@router.patch(
+    "/users/{user_id}/company/{company_id}",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+)
+def assign_user_to_company(
+    user_id: UUID,
+    company_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Assign a user to a company.
+    """
+    repository = UserRepository(db)
+    company_repository = CompanyRepository(db)
+
+    service = UserService(
+        repository,
+        company_repository,
+    )
+
+    try:
+        return service.assign_user_to_company(
+            user_id,
+            company_id,
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
+    "/companies/{company_id}/users",
+    response_model=list[UserResponse],
+    status_code=status.HTTP_200_OK,
+)
+def get_users_by_company(
+    company_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[User]:
+    """
+    Retrieve all users belonging to a company.
+    """
+    repository = UserRepository(db)
+    company_repository = CompanyRepository(db)
+
+    service = UserService(
+        repository,
+        company_repository,
+    )
+
+    return service.get_users_by_company(company_id)
