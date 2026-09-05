@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_roles
 from app.db.session import get_db
 from app.modules.companies.models import Company
 from app.modules.companies.schemas import (
@@ -12,7 +12,7 @@ from app.modules.companies.schemas import (
     CompanyUpdate,
 )
 from app.modules.companies.service import CompanyService
-from app.modules.users.models import User
+from app.modules.users.models import User, UserRole
 
 
 router = APIRouter(
@@ -29,7 +29,7 @@ router = APIRouter(
 def create_company(
     data: CompanyCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles(UserRole.ADMIN)),
 ) -> Company:
     """Create a new company."""
     try:

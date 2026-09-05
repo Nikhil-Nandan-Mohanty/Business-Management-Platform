@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -6,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.security import decode_access_token
 from app.db.session import get_db
-from app.modules.users.models import User
+from app.modules.users.models import User, UserRole
 from app.modules.users.repository import UserRepository
 
 
@@ -62,3 +63,22 @@ def get_current_user(
         )
 
     return user
+
+
+def require_roles(*allowed_roles: UserRole) -> Callable:
+    """
+    Require the authenticated user to have one of the specified roles.
+    """
+
+    def role_checker(
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action.",
+            )
+
+        return current_user
+
+    return role_checker
